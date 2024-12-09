@@ -1,7 +1,8 @@
 // packages/client/src/Image.tsx
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import type { ImageProps, LoaderConfig } from './types';
 import { AWSLoader, ServerLoader } from './loaders';
+import { DEVICE_SIZES } from './constants';
 
 export const Image: React.FC<ImageProps> = ({
   src,
@@ -14,14 +15,17 @@ export const Image: React.FC<ImageProps> = ({
   loaderUrl,
   className = '',
   customLoader,
+  sizes = '100vw',
+  ...othProps
 }) => {
+  const [isPreloaded, setIsPreloaded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const imgRef = useRef<HTMLImageElement>(null);
 
   const getLoader = () => {
     switch (loader) {
       case 'aws':
-        return new AWSLoader();
+        return new AWSLoader(loaderUrl);
       case 'server':
         return new ServerLoader(loaderUrl);
       case 'custom':
@@ -36,8 +40,10 @@ export const Image: React.FC<ImageProps> = ({
     }
   };
 
+  //GET ACTIVE URL
   const activeLoader = getLoader();
 
+  //GET IMAGE URL
   const getImageUrl = (options: Partial<LoaderConfig> = {}) => {
     return activeLoader.generateUrl({
       src,
@@ -47,60 +53,50 @@ export const Image: React.FC<ImageProps> = ({
     });
   };
 
-  useEffect(() => {
-    if (!priority && 'IntersectionObserver' in window) {
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting && imgRef.current) {
-            imgRef.current.src = getImageUrl();
-            observer.disconnect();
-          }
-        },
-        { rootMargin: '50px' },
-      );
-
-      if (imgRef.current) {
-        observer.observe(imgRef.current);
-      }
-
-      return () => observer.disconnect();
+  // Generate srcSet
+  const generateSrcSet = () => {
+    if (loader === 'none') {
+      return `${getImageUrl()} ${DEVICE_SIZES.slice(-1)[0]}w`;
     }
-  }, [src, width, priority]);
 
-  const shouldShowSources = loader !== 'none';
+    return DEVICE_SIZES.filter((w) => w <= width * 2) // Only include sizes up to 2x the target width
+      .map((w) => `${getImageUrl({ width: w })} ${w}w`)
+      .join(', ');
+  };
+
+  // ADD PRELOAD TAGS
+  if (typeof window !== 'undefined' && priority && !isPreloaded) {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = src;
+    link.imageSrcset = generateSrcSet();
+    link.imageSizes = sizes;
+    document.head.appendChild(link);
+    setIsPreloaded(true);
+
+    return;
+  }
 
   return (
-    <picture>
-      {shouldShowSources && (
-        <>
-          <source
-            type="image/avif"
-            srcSet={priority ? getImageUrl({ format: 'avif' }) : undefined}
-            sizes={`(max-width: ${width}px) 100vw, ${width}px`}
-          />
-          <source
-            type="image/webp"
-            srcSet={priority ? getImageUrl({ format: 'webp' }) : undefined}
-            sizes={`(max-width: ${width}px) 100vw, ${width}px`}
-          />
-        </>
-      )}
-      <img
-        ref={imgRef}
-        src={priority ? getImageUrl() : ''}
-        alt={alt}
-        width={width}
-        height={height}
-        loading={priority ? 'eager' : 'lazy'}
-        onLoad={() => setIsLoading(false)}
-        className={`transition-opacity duration-200 ${
-          isLoading ? 'opacity-0' : 'opacity-100'
-        } ${className}`}
-        style={{
-          maxWidth: '100%',
-          height: 'auto',
-        }}
-      />
-    </picture>
+    <img
+      ref={imgRef}
+      srcSet={generateSrcSet()}
+      sizes={sizes}
+      alt={alt}
+      width={width}
+      height={height}
+      loading={priority ? 'eager' : 'lazy'}
+      onLoad={() => setIsLoading(false)}
+      className={`transition-opacity duration-200 ${
+        isLoading ? 'opacity-0' : 'opacity-100'
+      } ${className}`}
+      style={{
+        maxWidth: '100%',
+        height: 'auto',
+      }}
+      //OTHER PROPS ADDITION
+      {...othProps}
+    />
   );
 };

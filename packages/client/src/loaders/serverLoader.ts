@@ -3,7 +3,9 @@ import { BaseLoader } from './baseLoader';
 import type { LoaderConfig } from '../types';
 
 export class ServerLoader extends BaseLoader {
-  constructor(private baseUrl: string = '/api/optimize') {}
+  constructor(private baseUrl: string = '/api/optimize') {
+    super();
+  }
 
   generateUrl(config: LoaderConfig): string {
     const url = new URL(this.baseUrl, window.location.origin);
@@ -11,7 +13,7 @@ export class ServerLoader extends BaseLoader {
       url: config.src,
       w: config.width.toString(),
       q: (config.quality || 75).toString(),
-      f: config.format,
+      f: config.format || '',
     }).href;
   }
 }

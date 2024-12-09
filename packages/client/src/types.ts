@@ -1,10 +1,6 @@
+import { ImgHTMLAttributes } from 'react';
+
 export type LoaderType = 'none' | 'server' | 'aws' | 'custom';
-
-export interface ImageDimensions {
-  width: number;
-  height: number;
-}
-
 export interface LoaderConfig {
   src: string;
   width: number;
@@ -12,7 +8,9 @@ export interface LoaderConfig {
   format?: string;
 }
 
-export interface ImageProps extends ImageDimensions {
+export interface ImageProps extends ImgHTMLAttributes<HTMLImageElement> {
+  width: number;
+  height: number;
   src: string;
   alt: string;
   quality?: number;
@@ -21,4 +19,5 @@ export interface ImageProps extends ImageDimensions {
   loaderUrl?: string;
   className?: string;
   customLoader?: (config: LoaderConfig) => string;
+  sizes?: string;
 }

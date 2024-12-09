@@ -3,8 +3,12 @@ import { BaseLoader } from './baseLoader';
 import type { LoaderConfig } from '../types';
 
 export class AWSLoader extends BaseLoader {
+  constructor(private baseUrl: string = '/api/optimize') {
+    super();
+  }
+
   generateUrl(config: LoaderConfig): string {
-    const url = new URL(`https://example.com${config.src}`);
+    const url = new URL(`${this.baseUrl}${config.src}`);
     return this.appendSearchParams(url, {
       format: 'auto',
       width: config.width.toString(),
