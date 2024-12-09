@@ -1,7 +1,7 @@
 // packages/client/src/Image.tsx
 import React, { useState, useRef } from 'react';
 import type { ImageProps, LoaderConfig } from './types';
-import { AWSLoader, ServerLoader } from './loaders';
+import { AWSLoader, ServerLoader } from './loaders/index';
 import { DEVICE_SIZES } from './constants';
 
 export const Image: React.FC<ImageProps> = ({

@@ -36,7 +36,14 @@ export class ImageOptimizer {
 
     // Create optimized version if it doesn't exist
     if (!existsSync(optimizedPath)) {
-      await sharp(imagePath)
+      let buffer: string | Buffer = imagePath;
+
+      if (imagePath.includes('https')) {
+        const response = await fetch(imagePath);
+        buffer = Buffer.from(await response.arrayBuffer());
+      }
+
+      await sharp(buffer)
         .resize(width)
         ?.[format]({ quality })
         .toFile(optimizedPath);

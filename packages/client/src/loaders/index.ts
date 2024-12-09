@@ -1,3 +1,3 @@
-export { AWSLoader } from './awsLoader';
-export { ServerLoader } from './serverLoader';
-export { BaseLoader } from './baseLoader';
+export * from './awsLoader';
+export * from './serverLoader';
+export * from './baseLoader';

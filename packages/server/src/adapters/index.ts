@@ -1,1 +1,1 @@
-export { ExpressAdapter } from './express';
+export * from './express';
