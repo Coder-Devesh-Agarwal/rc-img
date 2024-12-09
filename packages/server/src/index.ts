@@ -1,2 +1,2 @@
 export { ImageOptimizer } from './optimizer';
-export { ExpressAdapter } from './adapters/express';
+export { ExpressAdapter } from './adapters';
