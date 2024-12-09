@@ -1,18 +1,81 @@
 // packages/server/src/optimizer.ts
 import sharp from 'sharp';
 import path from 'path';
-import {
-  // promises as fs,
-  existsSync,
-  mkdirSync,
-} from 'fs';
+import * as fs from 'fs/promises';
 import { OptimizeParams, OptimizeResult } from './types';
+import { existsSync } from 'fs';
 
 export class ImageOptimizer {
-  constructor(private optimizedDir: string = 'public/optimized') {
-    // Create optimized directory if it doesn't exist
-    if (!existsSync(optimizedDir)) {
-      mkdirSync(optimizedDir, { recursive: true });
+  private cleanupInterval: NodeJS.Timeout | null = null;
+  private readonly MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days default
+
+  constructor(
+    private optimizedDir: string = 'public/optimized',
+    private maxAgeMs: number = this.MAX_AGE_MS, // Allow custom max age
+  ) {
+    // Start cleanup on initialization
+    this.initializeOptimizer();
+  }
+
+  private async initializeOptimizer() {
+    // Create directory if it doesn't exist
+    try {
+      await fs.mkdir(this.optimizedDir, { recursive: true });
+    } catch (error) {
+      console.error('Failed to create optimizer directory:', error);
+    }
+
+    // Completely clear all cached files
+    await this.clearCache(true);
+
+    // Set up periodic cleanup
+    this.startCleanupInterval();
+  }
+
+  private startCleanupInterval() {
+    // Run cleanup every 24 hours
+    this.cleanupInterval = setInterval(
+      () => {
+        this.clearCache();
+      },
+      24 * 60 * 60 * 1000,
+    );
+  }
+
+  private async clearCache(completeCleanup: boolean = false) {
+    try {
+      const files = await fs.readdir(this.optimizedDir);
+      const now = Date.now();
+
+      // Check each file's age and remove if too old
+      for (const file of files) {
+        const filePath = path.join(this.optimizedDir, file);
+
+        if (completeCleanup) {
+          // If complete cleanup is requested, delete all files
+          await fs.unlink(filePath);
+        } else {
+          // For regular cleanup, check file age
+          const stats = await fs.stat(filePath);
+          if (now - stats.mtimeMs > this.maxAgeMs) {
+            await fs.unlink(filePath);
+          }
+        }
+      }
+
+      if (completeCleanup) {
+        console.log('Cache completely cleared on startup');
+      }
+    } catch (error) {
+      console.error('Cache cleanup failed:', error);
+    }
+  }
+
+  // Cleanup when the optimizer is no longer needed
+  public dispose() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
     }
   }
 

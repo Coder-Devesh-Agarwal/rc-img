@@ -56,11 +56,13 @@ export const Image: React.FC<ImageProps> = ({
 
   // Generate srcSet
   const generateSrcSet = () => {
-    if (loader === 'none') {
-      return `${getImageUrl()} ${DEVICE_SIZES.slice(-1)[0]}w`;
-    }
+    // if (loader === 'none') {
+    //   return `${getImageUrl()} ${DEVICE_SIZES.slice(-1)[0]}w`;
+    // }
 
-    return DEVICE_SIZES.filter((w) => w <= width * 2) // Only include sizes up to 2x the target width
+    return DEVICE_SIZES.filter((w) => {
+      return w >= width && w <= width * 2;
+    }) // Only include sizes between target width and upto 2x the target width
       .map((w) => `${getImageUrl({ width: w })} ${w}w`)
       .join(', ');
   };
