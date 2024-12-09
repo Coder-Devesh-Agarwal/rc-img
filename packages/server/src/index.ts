@@ -1,1 +1,2 @@
-export const squared = (n: number): number => n * n;
+export { ImageOptimizer } from './optimizer';
+export { ExpressAdapter } from './adapters/express';

@@ -22,6 +22,7 @@ export const Image: React.FC<ImageProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const imgRef = useRef<HTMLImageElement>(null);
 
+  //Set Loader
   const getLoader = () => {
     switch (loader) {
       case 'aws':
