@@ -17,6 +17,7 @@ export interface ImageProps extends ImgHTMLAttributes<HTMLImageElement> {
   priority?: boolean;
   loader?: LoaderType;
   loaderUrl?: string;
+  loaderRoute?: string;
   className?: string;
   customLoader?: (config: LoaderConfig) => string;
   sizes?: string;

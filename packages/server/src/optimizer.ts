@@ -10,7 +10,7 @@ export class ImageOptimizer {
   private readonly MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days default
 
   constructor(
-    private optimizedDir: string = 'public/optimized',
+    private optimizedDir: string = '_rc/image',
     private maxAgeMs: number = this.MAX_AGE_MS, // Allow custom max age
   ) {
     // Start cleanup on initialization

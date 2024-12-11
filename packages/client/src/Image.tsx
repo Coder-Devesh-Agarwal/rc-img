@@ -13,6 +13,7 @@ export const Image: React.FC<ImageProps> = ({
   priority = false,
   loader = 'none',
   loaderUrl,
+  loaderRoute,
   className = '',
   customLoader,
   sizes = '100vw',
@@ -28,7 +29,7 @@ export const Image: React.FC<ImageProps> = ({
       case 'aws':
         return new AWSLoader(loaderUrl);
       case 'server':
-        return new ServerLoader(loaderUrl);
+        return new ServerLoader(loaderRoute, loaderUrl);
       case 'custom':
         return {
           generateUrl: (config: LoaderConfig) =>
